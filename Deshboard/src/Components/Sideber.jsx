@@ -126,7 +126,7 @@ export function SideBer({ sidebar, setSidebar }) {
                 </ListItem>
                 <AccordionBody className="py-1">
                   <List className="p-0 pl-6">
-                    <Link to="/orderlist">
+                    {/* <Link to="/orderlist">
                       <ListItem>
                         <ListItemPrefix>
                           <ChevronRightIcon
@@ -136,7 +136,7 @@ export function SideBer({ sidebar, setSidebar }) {
                         </ListItemPrefix>
                         Order List
                       </ListItem>
-                    </Link>
+                    </Link> */}
                     <Link to="/orderDetails">
                       <ListItem>
                         <ListItemPrefix>
@@ -148,12 +148,12 @@ export function SideBer({ sidebar, setSidebar }) {
                         Order Details
                       </ListItem>
                     </Link>
-                    <ListItem>
+                    {/* <ListItem>
                       <ListItemPrefix>
                         <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />
                       </ListItemPrefix>
                       Order Tracking
-                    </ListItem>
+                    </ListItem> */}
                   </List>
                 </AccordionBody>
               </Accordion>

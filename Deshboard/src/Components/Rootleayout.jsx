@@ -14,7 +14,7 @@ const Rootleayout = () => {
           <Navber />
         </header>
 
-        <main className="flex-1 overflow-auto bg-gray-100 p-4">
+        <main className="flex-1 overflow-auto bg-gray-100 sm:p-0 desktop:p-4">
           <Outlet />
         </main>
       </div>

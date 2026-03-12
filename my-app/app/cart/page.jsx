@@ -11,7 +11,7 @@ import { ImSpinner6 } from 'react-icons/im';
 
 const page = () => {
   let { enqueueSnackbar } = useSnackbar();
-  let [Selectpayment, setSelectpayment] = useState('insideDhaka');
+  let [Selectpayment, setSelectpayment] = useState('outsideDhaka');
   let [cartData, setCartData] = useState([]);
   let [SummeryData, setSummeryData] = useState({});
   let [loding, setLoding] = useState(false);
@@ -33,7 +33,6 @@ const page = () => {
       if (!res.ok) throw new Error('Failed to fetch CartSummery');
 
       let SumaaryData = await res.json();
-      console.log(SumaaryData)
       setSummeryData(SumaaryData.data);
     } catch (error) {
       console.log(error);

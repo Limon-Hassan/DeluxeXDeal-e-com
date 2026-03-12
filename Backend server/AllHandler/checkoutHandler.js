@@ -9,6 +9,14 @@ const { v4: uuidv4 } = require('uuid');
 async function makeCheckout(req, res) {
   let { cartId, name, address, phone, paymentMethod, saveInfo } = req.body;
   try {
+    if (phone.startsWith('0')) {
+      phone = '+880' + phone.slice(1);
+    }
+
+    if (!phone.startsWith('+880')) {
+      phone = '+880' + phone;
+    }
+
     let cartdata = await cartSchema
       .findOne({ cartId })
       .populate('items.productId');
@@ -18,15 +26,11 @@ async function makeCheckout(req, res) {
       (acc, item) => acc + Number(item.singleSubtotal),
       0,
     );
-    cartdata.shippingCost = cartdata.items.reduce(
-      (acc, item) => acc + Number(item.shippingCost),
-      0,
-    );
 
     if (saveInfo) {
       await Save_info.findOneAndUpdate(
-        { phone: Number(phone) },
-        { name, address, phone: Number(phone) },
+        { phone: phone },
+        { name, address, phone: phone },
         { upsert: true, new: true },
       );
     }
@@ -42,7 +46,7 @@ async function makeCheckout(req, res) {
       totalPrice: cartdata.totalPrice,
       name,
       address,
-      phone: Number(phone),
+      phone: phone,
       paymentMethod,
     });
     await checkout.save();
@@ -108,6 +112,15 @@ async function directCheckout(req, res) {
     if (!productId || !name || !address || !phone) {
       return res.status(400).json({ msg: 'All fields are required ' });
     }
+
+    if (phone.startsWith('0')) {
+      phone = '+880' + phone.slice(1);
+    }
+
+    if (!phone.startsWith('+880')) {
+      phone = '+880' + phone;
+    }
+
     let product = await productSchema.findById(productId);
 
     if (!product) return res.status(404).json({ msg: 'Product not found' });
@@ -132,8 +145,8 @@ async function directCheckout(req, res) {
     let oderId = `ODR-${uuidv4().split('-')[0].toUpperCase()}`;
     if (saveInfo) {
       await Save_info.findOneAndUpdate(
-        { phone: Number(phone) },
-        { name, address, phone: Number(phone) },
+        { phone: phone },
+        { name, address, phone: phone },
         { upsert: true, new: true },
       );
     }
@@ -145,7 +158,7 @@ async function directCheckout(req, res) {
       totalPrice,
       name,
       address,
-      phone: Number(phone),
+      phone: phone,
       paymentMethod,
       items: [
         {

@@ -212,7 +212,7 @@ const ProductList = () => {
   return (
     <>
       <section>
-        <div className="desktop:px-0 sm:mx-0  sm:px-5 desktop:mx-auto desktop:max-w-[1400px]">
+        <div className="sm:mx-0 sm:px-5 desktop:mx-auto desktop:max-w-[1400px] desktop:px-0">
           <div className="mt-8 w-full rounded-2xl bg-white p-4 shadow-lg">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-lg font-semibold">All Products</h2>
@@ -231,13 +231,13 @@ const ProductList = () => {
               <table className="w-full border-collapse text-left">
                 <thead>
                   <tr className="border-b">
-                    <th className="px-0 py-2">Product</th>
-                    <th className="px-0 py-2">Price</th>
-                    <th className="px-0 py-2">Stock</th>
-                    <th className="px-0 py-2">Sold</th>
-                    <th className="px-0 py-2">Discount</th>
-                    <th className="px-0 py-2">Category</th>
-                    <th className="px-0 py-2">Action</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Product</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Price</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Stock</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Sold</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Discount</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Category</th>
+                    <th className="py-2 sm:px-2 desktop:px-0">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -245,13 +245,15 @@ const ProductList = () => {
                     GetallProducts?.map((product, index) => (
                       <>
                         <tr key={index} className="border-b">
-                          <td className="flex w-[380px] items-center gap-2 text-clip text-wrap py-[18px] sm:px-2 desktop:px-0">
+                          <td className="flex items-center gap-2 py-[18px] sm:px-2 desktop:px-0">
                             <img
                               src={product.photo?.[0] || "/default-image.png"}
                               alt={product.name}
-                              className="h-[70px] w-[70px] rounded-lg"
+                              className="h-[70px] w-[70px] rounded-lg object-contain"
                             />
-                            {product.name}
+                            <p className="w-[360px] text-clip text-wrap">
+                              {product.name}
+                            </p>
                           </td>
                           <td className="px-0 py-[18px]">{product.price}৳</td>
                           <td className="px-0 py-[18px]">
@@ -446,7 +448,7 @@ const ProductList = () => {
                     <Typography variant="small" className="mb-3">
                       Change Description *
                     </Typography>
-                    <div className="sm:h-[550px] desktop:h-[400px] w-full resize-none rounded border border-gray-300 bg-[#F5F5F5] p-2 text-[16px] font-normal text-black/50 outline-none">
+                    <div className="w-full resize-none rounded border border-gray-300 bg-[#F5F5F5] p-2 text-[16px] font-normal text-black/50 outline-none sm:h-[550px] desktop:h-[400px]">
                       <JoditEditor
                         ref={editor}
                         value={descriptionChange}
