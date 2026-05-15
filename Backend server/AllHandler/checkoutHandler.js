@@ -73,24 +73,28 @@ async function makeCheckout(req, res) {
       status: 'success',
     });
 
-    await sendServerEvent('Purchase', {
-      phone: phone,
-      ip: req.ip,
-      ua: req.headers['user-agent'],
-      event_id: checkout._id.toString(),
+    await sendServerEvent(
+      'Purchase',
+      {
+        phone: phone,
+        ip: req.ip,
+        ua: req.headers['user-agent'],
+        event_id: checkout._id.toString(),
 
-      custom_data: {
-        currency: 'BDT',
-        value: Number(checkout.totalPrice),
-        contents: [
-          {
-            id: cartId,
-            quantity: 1,
-          },
-        ],
-        content_type: 'product',
+        custom_data: {
+          currency: 'BDT',
+          value: Number(checkout.totalPrice),
+          contents: [
+            {
+              id: cartId,
+              quantity: 1,
+            },
+          ],
+          content_type: 'product',
+        },
       },
-    });
+      req,
+    );
 
     await cartSchema.findOneAndDelete({ cartId });
     getIO().to(cartId).emit('deletedCart', { cartId });
@@ -173,18 +177,22 @@ async function directCheckout(req, res) {
 
     await productSchema.findByIdAndUpdate(productId, { $inc: { sold: 1 } });
 
-    await sendServerEvent('Purchase', {
-      phone: phone,
-      ip: req.ip,
-      ua: req.headers['user-agent'],
-      event_id: directCheckout._id.toString(),
-      custom_data: {
-        currency: 'BDT',
-        value: Number(totalPrice),
-        content_ids: [productId],
-        content_type: 'product',
+    await sendServerEvent(
+      'Purchase',
+      {
+        phone: phone,
+        ip: req.ip,
+        ua: req.headers['user-agent'],
+        event_id: directCheckout._id.toString(),
+        custom_data: {
+          currency: 'BDT',
+          value: Number(totalPrice),
+          content_ids: [productId],
+          content_type: 'product',
+        },
       },
-    });
+      req,
+    );
 
     return res.status(200).json({
       msg: 'Checkout successful',

@@ -174,6 +174,19 @@ const page = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.msg || 'Checkout failed');
       if (data.msg === 'Checkout successful') {
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq(
+            'track',
+            'Purchase',
+            {
+              value: Number(SummeryData.totalPrice), 
+              currency: 'BDT',
+              content_ids: [id], 
+              content_type: 'product',
+            },
+            { eventID: data.data._id },
+          ); 
+        }
         setSummeryData([]);
         localStorage.setItem('userInfo', JSON.stringify(phone));
         window.dispatchEvent(new Event('storage'));
@@ -207,7 +220,7 @@ const page = () => {
         setSaveInfo(false);
         setTimeout(() => {
           window.location.href = '/orderSuccess';
-        }, 1500);
+        }, 1000);
       }
     } catch (error) {
       console.log(error);
