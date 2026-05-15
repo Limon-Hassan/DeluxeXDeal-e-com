@@ -1,9 +1,10 @@
 let crypto = require('crypto');
 
-const sendServerEvent = async (eventName, eventData = {}) => {
+const sendServerEvent = async (eventName, eventData = {}, req) => {
   try {
     const pixelId = process.env.META_PIXEL_ID;
     const accessToken = process.env.META_ACCESS_TOKEN;
+    const testEventCode = process.env.META_TEST_EVENT;
 
     if (!pixelId || !accessToken)
       throw new Error('Pixel ID or Access Token missing from env');
@@ -20,6 +21,8 @@ const sendServerEvent = async (eventName, eventData = {}) => {
           user_data: {
             client_ip_address: eventData.ip,
             client_user_agent: eventData.ua,
+            fbp: req && req.cookies ? req.cookies['_fbp'] : undefined,
+            fbc: req && req.cookies ? req.cookies['_fbc'] : undefined,
             em: eventData.email
               ? crypto
                   .createHash('sha256')
@@ -36,6 +39,7 @@ const sendServerEvent = async (eventName, eventData = {}) => {
           custom_data: eventData.custom_data || {},
         },
       ],
+      test_event_code: testEventCode,
     };
 
     const res = await fetch(url, {
