@@ -16,7 +16,9 @@ let productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    product_secret: [String],
     photo: [String],
+    video: [String],
     sold: {
       type: Number,
       default: 0,
@@ -60,7 +62,7 @@ let productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 productSchema.index({ name: 'text', description: 'text' });
 module.exports = mongoose.model('product', productSchema);

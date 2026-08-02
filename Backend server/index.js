@@ -1,5 +1,6 @@
 let express = require('express');
 require('dotenv').config();
+const path = require('path');
 const Connection = require('./config/dbConfig');
 let router = require('./Router/index');
 let app = express();
@@ -27,6 +28,7 @@ Connection();
 app.use(router);
 app.use(express.static('uploads'));
 app.use(express.static('productImage'));
+app.use('/productVideo', express.static(path.join(__dirname, 'productVideo')));
 let http = require('http');
 const { init: initSocket } = require('./socket_server');
 const { sendServerEvent } = require('./config/sendServerEvent');

@@ -20,22 +20,26 @@ async function createProduct(req, res) {
     return res.status(400).send({ msg: 'please fill all the fields' });
   }
   try {
-    let fileNames = [];
-    if (req.files) {
-      if (Array.isArray(req.files)) {
-        req.files.forEach(file =>
-          fileNames.push(process.env.HOST_NAME + file.filename),
-        );
-      } else {
-        fileNames.push(process.env.HOST_NAME + req.files.filename);
-      }
+    let photoNames = [];
+    if (req.files?.photo) {
+      req.files.photo.forEach(file =>
+        photoNames.push(process.env.HOST_NAME + file.filename),
+      );
+    }
+
+    let videoNames = [];
+    if (req.files?.video) {
+      req.files.video.forEach(file =>
+        videoNames.push(process.env.HOST_NAME + file.filename),
+      );
     }
 
     let product = new productSchema({
       name,
       description,
       price,
-      photo: fileNames,
+      photo: photoNames,
+      video: videoNames,
       category,
       stock,
       brand,
@@ -49,9 +53,7 @@ async function createProduct(req, res) {
     if (category && category.length > 0) {
       await categorySchema.updateMany(
         { _id: { $in: category } },
-        {
-          $push: { Product: product._id },
-        },
+        { $push: { Product: product._id } },
       );
     }
     getIO().emit('productCreated', product);
@@ -61,6 +63,7 @@ async function createProduct(req, res) {
   } catch (error) {
     console.log(error.message);
     console.error(error.message);
+    return res.status(500).json({ msg: 'server error', error: error.message });
   }
 }
 
@@ -109,7 +112,10 @@ async function getProduct(req, res) {
 
 async function getAllProduct(req, res) {
   try {
-    let product = await productSchema.find().populate('category');
+    let product = await productSchema
+      .find()
+      .select('-video')
+      .populate('category');
     return res.json(product);
   } catch (error) {
     console.log(error.message);
@@ -122,6 +128,7 @@ async function topProduct(req, res) {
   try {
     let topProduct = await productSchema
       .find({ sold: { $gt: 0 } })
+      .select('-video')
       .sort({ sold: -1 })
       .limit(12)
       .populate({ path: 'category', select: 'name description image' });
@@ -177,17 +184,16 @@ async function updateProduct(req, res) {
         : [ChangeCategory];
     }
 
-    let fileNames = [];
-    if (req.files && req.files.length > 0) {
-      if (Array.isArray(req.files)) {
-        req.files.forEach(file =>
-          fileNames.push(process.env.HOST_NAME + file.filename),
-        );
-      } else {
-        fileNames.push(process.env.HOST_NAME + req.files.filename);
-      }
+    if (req.files?.photo && req.files.photo.length > 0) {
+      updatedData.photo = req.files.photo.map(
+        file => process.env.HOST_NAME + file.filename,
+      );
+    }
 
-      updatedData.photo = fileNames;
+    if (req.files?.video && req.files.video.length > 0) {
+      updatedData.video = req.files.video.map(
+        file => process.env.HOST_NAME + file.filename,
+      );
     }
 
     let updatedProduct = await productSchema.findByIdAndUpdate(
@@ -219,22 +225,25 @@ async function deleteProduct(req, res) {
       return res.json({ msg: 'product Not found !' });
     }
     await deleteProduct.deleteOne();
-    const deletePromises = deleteProduct.photo.map(imagePath => {
-      return new Promise((resolve, reject) => {
-        const PhotoPathOnServer = path.join(
-          __dirname,
-          '../productImage',
-          imagePath.split('/').pop(),
-        );
 
-        fs.unlink(PhotoPathOnServer, err => {
-          if (err) {
-            return reject('Failed to delete image');
-          }
+    const unlinkFile = (fileUrl, folderName) => {
+      return new Promise(resolve => {
+        const filePath = path.join(
+          __dirname,
+          `../${folderName}`,
+          fileUrl.split('/').pop(),
+        );
+        fs.unlink(filePath, err => {
+          if (err) console.log('file delete failed:', err.message);
           resolve();
         });
       });
-    });
+    };
+
+    const deletePromises = [
+      ...deleteProduct.photo.map(p => unlinkFile(p, 'productImage')),
+      ...(deleteProduct.video || []).map(v => unlinkFile(v, 'productVideo')),
+    ];
 
     await Promise.all(deletePromises);
     getIO().emit('productDeleted', id);
@@ -242,6 +251,7 @@ async function deleteProduct(req, res) {
   } catch (error) {
     console.log(error.message);
     console.error(error.message);
+    return res.status(500).json({ msg: 'server error', error: error.message });
   }
 }
 

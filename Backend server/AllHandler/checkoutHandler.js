@@ -226,7 +226,13 @@ async function getSavedInfo(req, res) {
 
 async function AdminReadCheckout(req, res) {
   try {
-    let allCheckout = await checkoutSchema.find({}).populate('items.productId');
+    const { orderStatus } = req.query;
+    const filter = orderStatus ? { orderStatus } : {};
+
+    let allCheckout = await checkoutSchema
+      .find(filter)
+      .populate('items.productId');
+
     if (!allCheckout) {
       return res.status(404).json({ msg: 'checkout not found !' });
     } else {
@@ -244,13 +250,103 @@ async function AdminReadCheckout(req, res) {
   }
 }
 
+
+async function bulkUpdateOrderStatus(req, res) {
+  const { ids, orderStatus } = req.body; 
+
+  const allowedStatus = ['Pending', 'Confirmed', 'Hold', 'Cancelled'];
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ msg: 'ids array is required' });
+  }
+
+  if (!allowedStatus.includes(orderStatus)) {
+    return res.status(400).json({ msg: 'Invalid order status' });
+  }
+
+  try {
+    const result = await checkoutSchema.updateMany(
+      { _id: { $in: ids } },
+      { $set: { orderStatus } },
+    );
+
+    getIO().emit('bulkOrderStatusUpdate', {
+      ids,
+      orderStatus,
+    });
+
+    return res.status(200).json({
+      msg: `${result.modifiedCount} orders updated to ${orderStatus}`,
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+}
+
+
+async function updateOrderStatus(req, res) {
+    const { id } = req.params; 
+  const { orderStatus } = req.body;
+  
+  let allowedStatus = [
+    'Pending',
+    'Confirmed',
+    'Hold',
+    'Cancelled',
+  ];
+
+  if (!allowedStatus.includes(orderStatus)) {
+    return res.status(400).json({ msg: 'Invalid order status' });
+  }
+
+   try {
+     const checkout = await checkoutSchema.findByIdAndUpdate(
+       id,
+       { orderStatus },
+       { new: true },
+     );
+
+     if (!checkout) {
+       return res.status(404).json({ msg: 'Checkout not found' });
+     }
+
+     getIO().to(checkout.cartId).emit('orderStatusUpdate', {
+       checkoutId: checkout._id,
+       orderStatus: checkout.orderStatus,
+     });
+
+     return res.status(200).json({
+       msg: `Order status updated to ${orderStatus}`,
+       data: checkout,
+     });
+   } catch (error) {
+     console.error(error.message);
+     return res.status(500).json({ msg: 'Server error', error: error.message });
+   }
+}
+
+
 async function deleteCheckout(req, res) {
   let { id } = req.query;
   try {
-    let checkout = await checkoutSchema.findById(id);
-    if (!checkout) return res.json({ msg: ' checkout not found' });
-    await checkout.deleteOne();
-    return res.json({ msg: 'checkout deleted successfully' });
+    let ids = Array.isArray(id) ? id : [id];
+
+    if (!ids.length || !ids[0]) {
+      return res.json({ msg: 'checkout not found' });
+    }
+
+    let result = await checkoutSchema.deleteMany({ _id: { $in: ids } });
+
+    if (result.deletedCount === 0) {
+      return res.json({ msg: 'checkout not found' });
+    }
+
+    return res.json({
+      msg: `${result.deletedCount} checkout deleted successfully`,
+    });
   } catch (error) {
     console.log(error.message);
     console.error(error.message);
@@ -266,4 +362,6 @@ module.exports = {
   deleteCheckout,
   getSavedInfo,
   directCheckout,
+  bulkUpdateOrderStatus,
+  updateOrderStatus
 };

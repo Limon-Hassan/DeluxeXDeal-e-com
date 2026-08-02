@@ -47,11 +47,15 @@ let CheckoutSchema = new mongoose.Schema(
       type: String,
       default: 'cash on delivery',
     },
-    paymentStatus: { type: String, default: 'Pending' },
+    orderStatus: {
+      type: String,
+      enum: ['Pending', 'Confirmed', 'Hold', 'Cancelled'],
+      default: 'Pending',
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model('checkout', CheckoutSchema);
