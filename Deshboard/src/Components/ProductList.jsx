@@ -9,6 +9,9 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { LuPenLine } from "react-icons/lu";
+import { FaTrash } from "react-icons/fa";
+
 
 import JoditEditor from "jodit-react";
 import axios from "axios";
@@ -281,12 +284,12 @@ const ProductList = () => {
                               className="bg-transparent shadow-none hover:shadow-none"
                               onClick={() => handleOpen(product)}
                             >
-                              <i className="fa-light fa-pen-line cursor-pointer text-[24px] text-green-400"></i>
+                              <LuPenLine className="text-[24px] text-green-400 cursor-pointer" />
                             </Button>
-                            <i
+                            <FaTrash
                               onClick={() => handleProDeleted(product._id)}
-                              className="fa-light fa-trash cursor-pointer text-[24px] text-red-400"
-                            ></i>
+                              className="text-[24px] text-red-400 cursor-pointer"
+                            />
                           </div>
                         </tr>
                       </>

@@ -2,6 +2,7 @@ import { Input } from "@material-tailwind/react";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 
 const CategoryList = () => {
   const api = import.meta.env.VITE_SERVER_URL;
@@ -60,7 +61,7 @@ const CategoryList = () => {
               </div>
               <Link
                 to="/addcategory"
-                className="sm:hidden desktop:block rounded-lg border border-red-400 px-[42px] py-[12px] text-[20px] text-red-500 duration-300 ease-in-out hover:bg-red-500 hover:text-white"
+                className="rounded-lg border border-red-400 px-[42px] py-[12px] text-[20px] text-red-500 duration-300 ease-in-out hover:bg-red-500 hover:text-white sm:hidden desktop:block"
               >
                 <span>+</span> Add category
               </Link>
@@ -92,10 +93,10 @@ const CategoryList = () => {
                           itmes({category.totalproducts || "N/A"})
                         </td>
                         <td className="px-4 py-3">
-                          <i
+                          <FaTrash
                             onClick={() => handleCateDeleted(category._id)}
-                            className="fa-light fa-trash cursor-pointer text-[24px] text-red-400"
-                          ></i>
+                            className="cursor-pointer text-red-500"
+                          />
                         </td>
                       </tr>
                     ))
