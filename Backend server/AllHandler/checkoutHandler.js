@@ -3,6 +3,7 @@ const cartSchema = require('../models/cartSchema');
 const checkoutSchema = require('../models/checkoutSchema');
 const productSchema = require('../models/productSchema');
 const Save_info = require('../models/Save_info');
+const { createSteadfastOrder } = require('../service/steadfastService');
 const { getIO } = require('../socket_server');
 const { v4: uuidv4 } = require('uuid');
 
@@ -51,6 +52,10 @@ async function makeCheckout(req, res) {
     });
     await checkout.save();
 
+
+
+
+
     let updateProductSold = cartdata.items.map(item => ({
       updateOne: {
         filter: { _id: item.productId._id },
@@ -72,6 +77,27 @@ async function makeCheckout(req, res) {
       items: checkout.items,
       status: 'success',
     });
+
+
+    const steadfastResult = await createSteadfastOrder({
+      invoice: checkout.uniqueOrderID,
+      recipientName: checkout.name,
+      recipientPhone: checkout.phone,
+      recipientAddress: checkout.address,
+      codAmount:
+        checkout.paymentMethod === 'cash on delivery' ? checkout.totalPrice : 0,
+    });
+
+    if (steadfastResult.success) {
+      checkout.steadfast = {
+        consignmentId: steadfastResult.data.consignment.consignment_id,
+        trackingCode: steadfastResult.data.consignment.tracking_code,
+        status: steadfastResult.data.consignment.status,
+      };
+    } else {
+      checkout.steadfast = { error: steadfastResult.error };
+    }
+    await checkout.save();
 
     await sendServerEvent(
       'Purchase',
@@ -177,6 +203,27 @@ async function directCheckout(req, res) {
 
     await productSchema.findByIdAndUpdate(productId, { $inc: { sold: 1 } });
 
+
+    const steadfastResult = await createSteadfastOrder({
+      invoice: directCheckout.uniqueOrderID,
+      recipientName: directCheckout.name,
+      recipientPhone: directCheckout.phone,
+      recipientAddress: directCheckout.address,
+      codAmount:
+        directCheckout.paymentMethod === 'cash on delivery' ? directCheckout.totalPrice : 0,
+    });
+
+    if (steadfastResult.success) {
+      directCheckout.steadfast = {
+        consignmentId: steadfastResult.data.consignment.consignment_id,
+        trackingCode: steadfastResult.data.consignment.tracking_code,
+        status: steadfastResult.data.consignment.status,
+      };
+    } else {
+      directCheckout.steadfast = { error: steadfastResult.error };
+    }
+    await directCheckout.save();
+
     await sendServerEvent(
       'Purchase',
       {
@@ -202,6 +249,99 @@ async function directCheckout(req, res) {
     console.log(error.message);
     console.error(error.message);
     res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+}
+
+async function steadfastWebhook(req, res) {
+  try {
+    const authHeader = req.headers['authorization'];
+    const expectedToken = `Bearer ${process.env.STEADFAST_WEBHOOK_TOKEN}`;
+
+    if (!authHeader || authHeader !== expectedToken) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Unauthorized webhook request',
+      });
+    }
+
+    const {
+      notification_type,
+      consignment_id,
+      invoice,
+      cod_amount,
+      status,
+      delivery_charge,
+      tracking_message,
+      updated_at,
+    } = req.body;
+
+    if (!invoice) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid consignment ID',
+      });
+    }
+
+    let checkout = await checkoutSchema.findOne({ uniqueOrderID: invoice });
+
+    if (!checkout) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Order not found for this invoice',
+      });
+    }
+
+    if (notification_type === 'delivery_status') {
+      checkout.steadfast = {
+        ...checkout.steadfast,
+        consignmentId: consignment_id,
+        status: status,
+        trackingMessage: tracking_message,
+        codAmount: cod_amount,
+        deliveryCharge: delivery_charge,
+        lastUpdatedAt: updated_at,
+      };
+
+      // চাইলে courier status অনুযায়ী orderStatus ও auto-update করা যায়
+      if (status === 'cancelled') {
+        checkout.orderStatus = 'Cancelled';
+      }else if (status === 'delivered') {
+        checkout.orderStatus = 'Delivered';
+      }else if (status === 'out_for_delivery') {
+        checkout.orderStatus = 'Shipped';
+      }else if (status === 'returned') {
+        checkout.orderStatus = 'Returned';
+      }
+     
+    } else if (notification_type === 'tracking_update') {
+      checkout.steadfast = {
+        ...checkout.steadfast,
+        consignmentId: consignment_id,
+        trackingMessage: tracking_message,
+        lastUpdatedAt: updated_at,
+      };
+    }
+
+    await checkout.save();
+
+    getIO().emit('steadfastUpdate', {
+      checkoutId: checkout._id,
+      invoice,
+      notification_type,
+      status: checkout.steadfast.status,
+      trackingMessage: checkout.steadfast.trackingMessage,
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Webhook received successfully.',
+    });
+  } catch (error) {
+    console.error('Steadfast webhook error:', error.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
   }
 }
 
@@ -363,5 +503,6 @@ module.exports = {
   getSavedInfo,
   directCheckout,
   bulkUpdateOrderStatus,
-  updateOrderStatus
+  updateOrderStatus,
+  steadfastWebhook,
 };

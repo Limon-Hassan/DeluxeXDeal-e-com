@@ -7,6 +7,7 @@ const {
   directCheckout,
   updateOrderStatus,
   bulkUpdateOrderStatus,
+  steadfastWebhook,
 } = require('../../AllHandler/checkoutHandler');
 let router = express.Router();
 
@@ -17,5 +18,6 @@ router.patch('/status/:id', updateOrderStatus);
 router.patch('/bulk-status', bulkUpdateOrderStatus);
 router.get('/getSavedInfo', getSavedInfo);
 router.delete('/deleteChechout', deleteCheckout);
+router.post('/webhook/steadfast', steadfastWebhook);
 
 module.exports = router;

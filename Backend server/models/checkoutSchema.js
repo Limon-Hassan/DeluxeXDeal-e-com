@@ -47,11 +47,22 @@ let CheckoutSchema = new mongoose.Schema(
       type: String,
       default: 'cash on delivery',
     },
+    steadfast: {
+      consignmentId: Number,
+      trackingCode: String,
+      status: String, 
+      trackingMessage: String,
+      codAmount: Number,
+      deliveryCharge: Number,
+      lastUpdatedAt: Date,
+      error: String,
+    },
     orderStatus: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Hold', 'Cancelled'],
+      enum: ['Pending', 'Confirmed', 'Hold', 'Cancelled', 'Delivered', 'Returned', 'Shipped'],
       default: 'Pending',
     },
+
   },
   {
     timestamps: true,
