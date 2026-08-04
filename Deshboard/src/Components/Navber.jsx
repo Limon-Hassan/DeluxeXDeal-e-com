@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { SideBer } from "./Sideber";
+import { FaBars } from "react-icons/fa6";
+
 
 const Navber = () => {
   let [sidebar, setSidebar] = useState(false);
@@ -13,7 +15,7 @@ const Navber = () => {
               onClick={() => setSidebar(!sidebar)}
               className="h-[50px] w-[50px] items-center justify-center rounded-md bg-white shadow-md sm:flex desktop:hidden"
             >
-              <i className="fa-solid fa-bars text-[24px] text-gray-600"></i>
+              <FaBars className="h-6 w-6 text-gray-600" />
             </button>
             <div className="relative h-[50px] rounded-full border-2 border-black/50 sm:w-[230px] desktop:w-[750px]">
               <input

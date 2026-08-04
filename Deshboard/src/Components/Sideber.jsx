@@ -19,6 +19,8 @@ import {
   InboxIcon,
   PowerIcon,
 } from "@heroicons/react/24/solid";
+import { RxCross1 } from "react-icons/rx";
+
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 
@@ -62,7 +64,7 @@ export function SideBer({ sidebar, setSidebar }) {
             variant="h5"
             color="blue-gray"
           >
-            <i className="fa-solid fa-x text-[24px] text-gray-600"></i>
+            <RxCross1 className="h-6 w-6 text-gray-600" />
           </Typography>
         </div>
       </div>

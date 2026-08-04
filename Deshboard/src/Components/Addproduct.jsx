@@ -15,6 +15,7 @@ const AddProduct = () => {
   const api = import.meta.env.VITE_SERVER_URL;
   const editor = useRef(null);
   const [productName, setProductName] = useState("");
+  const [productSecretKey, setProductSecretKey] = useState("");
   const [category, setCategory] = useState("");
   const [categoriesFromBackend, setcategoriesFromBackend] = useState([]);
   const [brand, setBrand] = useState("");
@@ -26,6 +27,7 @@ const AddProduct = () => {
   const [sold, setSold] = useState("");
   const [weight, setWeight] = useState("");
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
 
   const config = useMemo(
     () => ({
@@ -50,8 +52,21 @@ const AddProduct = () => {
     setImages((prev) => [...prev, ...files]);
   };
 
+  let handleVideoChange = (e) => {
+    let videoFiles = Array.from(e.target.files);
+    if (videoFiles.length + videos.length > 2) {
+      alert("You can only upload up to 2 videos.");
+      return;
+    }
+    setVideos((prev) => [...prev, ...videoFiles]);
+  };
+
   const handleDeleteImage = (index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteVideo = (index) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
   };
 
   useEffect(() => {
@@ -77,6 +92,7 @@ const AddProduct = () => {
     }
     const formData = new FormData();
     formData.append("name", productName);
+    formData.append("product_secret", productSecretKey);
     formData.append("category", category);
     formData.append("brand", brand);
     formData.append("stock", stock);
@@ -89,6 +105,11 @@ const AddProduct = () => {
     if (images.length > 0) {
       images.forEach((img) => {
         formData.append("photo", img);
+      });
+    }
+    if (videos.length > 0) {
+      videos.forEach((video) => {
+        formData.append("video", video);
       });
     }
     for (let [key, value] of formData.entries()) {
@@ -111,7 +132,9 @@ const AddProduct = () => {
         setOldPrice("");
         setSold("");
         setDiscount("");
+        setProductSecretKey("");
         setImages([]);
+        setVideos([]);
         toast.success("Product added SuccessFully!", {
           position: "top-center",
           autoClose: 3000,
@@ -152,6 +175,19 @@ const AddProduct = () => {
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               required
+              maxLength={80}
+            />
+          </div>
+          <div>
+            <Typography variant="small" className="mb-3">
+              Product Secret Key
+            </Typography>
+            <Input
+              color="blue"
+              type="text"
+              label="Product Secret Key"
+              value={productSecretKey}
+              onChange={(e) => setProductSecretKey(e.target.value)}
               maxLength={80}
             />
           </div>
@@ -288,7 +324,6 @@ const AddProduct = () => {
             </div>
           </div>
         </div>
-
         <div className="mt-6">
           <Typography variant="small" className="mb-3">
             Upload Images
@@ -296,7 +331,7 @@ const AddProduct = () => {
 
           <div className="flex w-full flex-col items-center justify-center gap-4">
             <label
-              htmlFor="dropzone-file"
+              htmlFor="images-dropzone-file"
               className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
             >
               <div className="flex flex-col items-center justify-center pb-6 pt-5">
@@ -310,7 +345,7 @@ const AddProduct = () => {
                 </p>
               </div>
               <input
-                id="dropzone-file"
+                id="images-dropzone-file"
                 type="file"
                 accept="image/*"
                 multiple
@@ -340,7 +375,57 @@ const AddProduct = () => {
             </div>
           </div>
         </div>
+        <div className="mt-6">
+          <Typography variant="small" className="mb-3">
+            Upload Video
+          </Typography>
 
+          <div className="flex w-full flex-col items-center justify-center gap-4">
+            <label
+              htmlFor="videos-dropzone-file"
+              className="flex h-64 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
+            >
+              <div className="flex flex-col items-center justify-center pb-6 pt-5">
+                <i className="fa-light fa-cloud-arrow-up mb-3 text-[30px] text-blue-600"></i>
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-semibold">Click to upload</span> or drag
+                  and drop
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  SVG, PNG, JPG or GIF (MAX. 768x768px)
+                </p>
+              </div>
+              <input
+                id="videos-dropzone-file"
+                type="file"
+                accept="video/*"
+                multiple
+                required
+                onChange={handleVideoChange}
+                className="hidden"
+              />
+            </label>
+
+            <div className="mt-4 flex flex-wrap gap-4">
+              {videos.map((video, index) => (
+                <div key={index} className="relative h-40 w-40">
+                  <video
+                    src={URL.createObjectURL(video)}
+                    alt={`upload-${index}`}
+                    className="h-full w-full rounded object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteVideo(index)}
+                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
         <div className="mt-6 flex gap-4">
           <Button className="w-full" color="blue" onClick={handleAddProduct}>
             Add Product
