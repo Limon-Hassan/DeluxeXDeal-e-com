@@ -15,6 +15,7 @@ async function createProduct(req, res) {
     weight,
     oldPrice,
     disCountPrice,
+    product_secret,
   } = req.body;
   if (!name || !description || !price) {
     return res.status(400).send({ msg: 'please fill all the fields' });
@@ -46,6 +47,7 @@ async function createProduct(req, res) {
       weight,
       oldPrice,
       disCountPrice,
+      product_secret: product_secret || '',
     });
 
     await product.save();
