@@ -16,6 +16,7 @@ const Page = () => {
   const [product, setProduct] = useState('');
   const [RelatedProduct, setRelatedProduct] = useState([]);
   const [addedCart, setAddedCart] = useState([]);
+  const [showVideo, setShowVideo] = useState(false);
   let router = useRouter();
   const { id } = useParams();
   const images = product && Array.isArray(product.photo) ? product.photo : [];
@@ -174,6 +175,14 @@ const Page = () => {
     }
   }, [product]);
 
+  const videos = product && Array.isArray(product.video) ? product.video : [];
+
+  useEffect(() => {
+    if (videos.length > 0) {
+      setShowVideo(true);
+    }
+  }, [product]);
+
   return (
     <>
       <Head>
@@ -197,22 +206,46 @@ const Page = () => {
         <Container>
           <div className="flex flex-col lg:flex-row mobile:gap-[20px] tablet:gap-[50px] laptop:gap-[100px] computer:gap-[100px]">
             <div className="image_part relative shadow-md flex flex-col items-center">
-              <div
-                className=" mobile:w-[300px] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
-                style={{
-                  backgroundImage: `url(${selectedImage})`,
-                  ...zoomStyle,
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-              ></div>
-              <button
-                className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer"
-                onClick={() => setIsFullscreen(true)}
-              >
-                <FaMagnifyingGlass />
-              </button>
+              {showVideo && videos.length > 0 ? (
+                <div className="relative mobile:w-[300px] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden">
+                  <video
+                    src={videos[0]}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => setShowVideo(false)}
+                    className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer z-10"
+                  >
+                    ✖
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className=" mobile:w-[300px] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
+                  style={{
+                    backgroundImage: `url(${selectedImage})`,
+                    ...zoomStyle,
+                  }}
+                  onMouseMove={handleMouseMove}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                ></div>
+              )}
+
+              {!showVideo && (
+                <button
+                  className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer"
+                  onClick={() => setIsFullscreen(true)}
+                >
+                  <FaMagnifyingGlass />
+                </button>
+              )}
+
               {isFullscreen && (
                 <div
                   className="fixed inset-0 bg-black flex items-center justify-center z-50"
@@ -231,6 +264,16 @@ const Page = () => {
                   </button>
                 </div>
               )}
+
+              {videos.length > 0 && !showVideo && (
+                <button
+                  onClick={() => setShowVideo(true)}
+                  className="flex items-center gap-1.5 text-[13px] font-nunito font-semibold text-white bg-[#F1A31C] px-3 py-1.5 rounded-full mt-2 hover:bg-[#e1a60b] transition cursor-pointer"
+                >
+                  ▶ Play Video
+                </button>
+              )}
+
               <div className="flex items-center gap-[20px] my-[20px]">
                 {images.map((img, i) => (
                   <img
@@ -242,7 +285,10 @@ const Page = () => {
                         ? 'opacity-100 border-1 border-black/30'
                         : 'opacity-40 hover:opacity-70'
                     }`}
-                    onClick={() => setSelectedImage(img)}
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setShowVideo(false);
+                    }}
                   />
                 ))}
               </div>
