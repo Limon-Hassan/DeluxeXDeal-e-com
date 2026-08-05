@@ -79,25 +79,7 @@ async function makeCheckout(req, res) {
     });
 
 
-    const steadfastResult = await createSteadfastOrder({
-      invoice: checkout.uniqueOrderID,
-      recipientName: checkout.name,
-      recipientPhone: checkout.phone,
-      recipientAddress: checkout.address,
-      codAmount:
-        checkout.paymentMethod === 'cash on delivery' ? checkout.totalPrice : 0,
-    });
-
-    if (steadfastResult.success) {
-      checkout.steadfast = {
-        consignmentId: steadfastResult.data.consignment.consignment_id,
-        trackingCode: steadfastResult.data.consignment.tracking_code,
-        status: steadfastResult.data.consignment.status,
-      };
-    } else {
-      checkout.steadfast = { error: steadfastResult.error };
-    }
-    await checkout.save();
+  
 
     await sendServerEvent(
       'Purchase',
@@ -204,25 +186,7 @@ async function directCheckout(req, res) {
     await productSchema.findByIdAndUpdate(productId, { $inc: { sold: 1 } });
 
 
-    const steadfastResult = await createSteadfastOrder({
-      invoice: directCheckout.uniqueOrderID,
-      recipientName: directCheckout.name,
-      recipientPhone: directCheckout.phone,
-      recipientAddress: directCheckout.address,
-      codAmount:
-        directCheckout.paymentMethod === 'cash on delivery' ? directCheckout.totalPrice : 0,
-    });
-
-    if (steadfastResult.success) {
-      directCheckout.steadfast = {
-        consignmentId: steadfastResult.data.consignment.consignment_id,
-        trackingCode: steadfastResult.data.consignment.tracking_code,
-        status: steadfastResult.data.consignment.status,
-      };
-    } else {
-      directCheckout.steadfast = { error: steadfastResult.error };
-    }
-    await directCheckout.save();
+   
 
     await sendServerEvent(
       'Purchase',
@@ -249,6 +213,61 @@ async function directCheckout(req, res) {
     console.log(error.message);
     console.error(error.message);
     res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+}
+
+async function sendToSteadfast(req, res) {
+  const { id } = req.params;
+  try {
+    const checkout = await checkoutSchema.findById(id);
+    if (!checkout) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    if (checkout.steadfast?.trackingCode) {
+      return res.status(400).json({
+        msg: 'This order has already been sent to Steadfast',
+        data: checkout.steadfast,
+      });
+    }
+
+    const steadfastResult = await createSteadfastOrder({
+      invoice: checkout.uniqueOrderID,
+      recipientName: checkout.name,
+      recipientPhone: checkout.phone,
+      recipientAddress: checkout.address,
+      codAmount:
+        checkout.paymentMethod === 'cash on delivery' ? checkout.totalPrice : 0,
+    });
+
+    if (!steadfastResult.success) {
+      checkout.steadfast = { error: steadfastResult.error };
+      await checkout.save();
+      return res.status(502).json({
+        msg: 'Failed to send order to Steadfast',
+        error: steadfastResult.error,
+      });
+    }
+
+    checkout.steadfast = {
+      consignmentId: steadfastResult.data.consignment.consignment_id,
+      trackingCode: steadfastResult.data.consignment.tracking_code,
+      status: steadfastResult.data.consignment.status,
+    };
+    await checkout.save();
+
+    getIO().emit('steadfastSent', {
+      checkoutId: checkout._id,
+      trackingCode: checkout.steadfast.trackingCode,
+    });
+
+    return res.status(200).json({
+      msg: 'Order sent to Steadfast successfully',
+      data: checkout.steadfast,
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ msg: 'Server error', error: error.message });
   }
 }
 
@@ -504,5 +523,6 @@ module.exports = {
   directCheckout,
   bulkUpdateOrderStatus,
   updateOrderStatus,
+  sendToSteadfast,
   steadfastWebhook,
 };
