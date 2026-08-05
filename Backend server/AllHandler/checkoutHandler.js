@@ -413,7 +413,7 @@ async function AdminReadCheckout(req, res) {
 async function bulkUpdateOrderStatus(req, res) {
   const { ids, orderStatus } = req.body; 
 
-  const allowedStatus = ['Pending', 'Confirmed', 'Hold', 'Cancelled'];
+  const allowedStatus = ['Pending', 'Confirmed', 'Hold', 'Cancelled', 'Delivered', 'Returned', 'Shipped'];
 
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ msg: 'ids array is required' });
@@ -455,6 +455,9 @@ async function updateOrderStatus(req, res) {
     'Confirmed',
     'Hold',
     'Cancelled',
+    'Delivered',
+    'Returned',
+    'Shipped',
   ];
 
   if (!allowedStatus.includes(orderStatus)) {
