@@ -78,12 +78,17 @@ async function getProduct(req, res) {
         .populate('category')
         .populate('reviews', 'name comment rating');
 
+      if (!singleProduct) {
+        return res.status(404).json({ msg: 'Product not found' });
+      }
+
       let totalReview = singleProduct.reviews.length;
       const relatedProduct = await productSchema
         .find({
           category: singleProduct.category._id || singleProduct.category,
           _id: { $ne: id },
         })
+        .select('-video')
         .limit(8)
         .populate({
           path: 'category',
@@ -100,6 +105,7 @@ async function getProduct(req, res) {
       let skip = (page - 1) * limit;
       let product = await productSchema
         .find()
+        .select('-video')
         .skip(skip)
         .limit(Number(limit))
         .populate('category');
