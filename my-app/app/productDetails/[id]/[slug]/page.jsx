@@ -177,11 +177,7 @@ const Page = () => {
 
   const videos = product && Array.isArray(product.video) ? product.video : [];
 
-  useEffect(() => {
-    if (videos.length > 0) {
-      setShowVideo(true);
-    }
-  }, [product]);
+  
 
   return (
     <>
@@ -207,11 +203,10 @@ const Page = () => {
           <div className="flex flex-col lg:flex-row mobile:gap-[20px] tablet:gap-[50px] laptop:gap-[100px] computer:gap-[100px]">
             <div className="image_part relative shadow-md flex flex-col items-center">
               {showVideo && videos.length > 0 ? (
-                <div className="relative mobile:w-[300px] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden">
+                <div className="relative mobile:w-screen mobile:left-1/2 mobile:right-1/2 mobile:-mx-[50vw] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden">
                   <video
                     src={videos[0]}
                     autoPlay
-                    muted
                     loop
                     playsInline
                     controls
@@ -226,7 +221,7 @@ const Page = () => {
                 </div>
               ) : (
                 <div
-                  className=" mobile:w-[300px] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
+                  className="mobile:w-screen mobile:relative mobile:left-1/2 mobile:right-1/2 mobile:-mx-[50vw] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-md overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
                   style={{
                     backgroundImage: `url(${selectedImage})`,
                     ...zoomStyle,
