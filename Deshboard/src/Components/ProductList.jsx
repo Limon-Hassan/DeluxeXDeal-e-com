@@ -94,23 +94,22 @@ const ProductList = () => {
     setImages((prev) => [...prev, ...files]);
   };
 
-
-   let handleVideoChange = (e) => {
-     let videoFiles = Array.from(e.target.files);
-     if (videoFiles.length + videos.length > 2) {
-       alert("You can only upload up to 2 videos.");
-       return;
-     }
-     setVideos((prev) => [...prev, ...videoFiles]);
-   };
+  let handleVideoChange = (e) => {
+    let videoFiles = Array.from(e.target.files);
+    if (videoFiles.length + videos.length > 2) {
+      alert("You can only upload up to 2 videos.");
+      return;
+    }
+    setVideos((prev) => [...prev, ...videoFiles]);
+  };
 
   const handleDeleteImage = (index) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-   const handleDeleteVideo = (index) => {
-     setVideos((prev) => prev.filter((_, i) => i !== index));
-   };
+  const handleDeleteVideo = (index) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     axios
@@ -191,6 +190,7 @@ const ProductList = () => {
           withCredentials: true,
         },
       );
+      console.log("Error updating product:", response.data);
 
       fetchProduct();
       setProductChangeName("");
@@ -203,6 +203,7 @@ const ProductList = () => {
       setDescriptionChange("");
       setChangeSold("");
       setImages([]);
+      setVideos([]);
       toast.success("Product Update SuccessFully!", {
         position: "top-center",
         autoClose: 3000,
@@ -212,6 +213,7 @@ const ProductList = () => {
         progress: undefined,
       });
     } catch (error) {
+      console.log("Error updating product:", error);
       console.error(error);
       toast.error(
         (error.response && error.response.data?.msg) || "Something went wrong",
@@ -553,7 +555,6 @@ const ProductList = () => {
                         type="file"
                         accept="video/*"
                         multiple
-                        required
                         onChange={handleVideoChange}
                         className="hidden"
                       />
@@ -581,7 +582,7 @@ const ProductList = () => {
                 </div>
                 <div className="mt-6 flex gap-4">
                   <Button type="button" color="blue" onClick={handleAddProduct}>
-                    Add Product
+                    Update Product
                   </Button>
                   <Button onClick={() => setOpen(false)} color="red">
                     Cancel

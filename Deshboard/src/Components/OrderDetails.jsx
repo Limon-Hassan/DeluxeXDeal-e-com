@@ -1,6 +1,10 @@
+
+
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import CopyButton from "./CopyButton";
+import { FaTruck } from "react-icons/fa";
+import { IoSend } from "react-icons/io5";
 
 const STATUS_TABS = [
   { key: "Pending", label: "Pending" },
@@ -53,6 +57,9 @@ const OrderDetails = () => {
   const [activeTab, setActiveTab] = useState("Pending");
   const [selectedIds, setSelectedIds] = useState([]);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [sendingId, setSendingId] = useState(null);
+
+  const [sendTargetId, setSendTargetId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -133,27 +140,40 @@ const OrderDetails = () => {
     );
   };
 
-  const handleSendClick = () => {
+  const handleSendClick = (orderId = null) => {
+    if (orderId) {
+      setSendTargetId(orderId);
+      setShowSendModal(true);
+      return;
+    }
     if (selectedIds.length === 0) {
       alert("Please select at least one order.");
       return;
     }
+    setSendTargetId(null);
     setShowSendModal(true);
   };
 
+  const closeSendModal = () => {
+    setShowSendModal(false);
+    setSendTargetId(null);
+  };
+
   const handleSendStatus = async (orderStatus) => {
+    const ids = sendTargetId ? [sendTargetId] : selectedIds;
+    if (ids.length === 0) return;
+
     setActionLoading(true);
     try {
       await axios.patch(`${api}api/v3/checkout/bulk-status`, {
-        ids: selectedIds,
+        ids,
         orderStatus,
       });
       setOrders((prev) =>
-        prev.map((o) =>
-          selectedIds.includes(o._id) ? { ...o, orderStatus } : o,
-        ),
+        prev.map((o) => (ids.includes(o._id) ? { ...o, orderStatus } : o)),
       );
       setSelectedIds([]);
+      setSendTargetId(null);
       setShowSendModal(false);
     } catch (error) {
       console.error(error);
@@ -184,15 +204,35 @@ const OrderDetails = () => {
     }
   };
 
-   const buildCopyText = (order) => {
-     const product = order.items?.[0]?.productId;
-     const secretOrName =
-       product?.Product_Secret || product?.name?.slice(0, 50) || "";
+  const buildCopyText = (order) => {
+    const product = order.items?.[0]?.productId;
+    const secretOrName =
+      product?.Product_Secret || product?.name?.slice(0, 50) || "";
 
-     return [order.name, order.address, order.phone, secretOrName]
-       .filter(Boolean)
-       .join("\n");
-   };
+    return [order.name, order.address, order.phone, secretOrName]
+      .filter(Boolean)
+      .join("\n");
+  };
+
+
+  const handleSendToSteadfast = async (orderId) => {
+    setSendingId(orderId);
+    try {
+      const res = await axios.post(
+        `${api}api/v3/checkout/send-to-steadfast/${orderId}`,
+      );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, steadfast: res.data.data } : o,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      alert(error.response?.data?.msg || "Failed to send order to Steadfast!");
+    } finally {
+      setSendingId(null);
+    }
+  };
 
   const SteadfastBadge = ({ order }) => {
     const Streadfaststatus = order.steadfast?.status;
@@ -265,7 +305,7 @@ const OrderDetails = () => {
               </label>
 
               <button
-                onClick={handleSendClick}
+                onClick={() => handleSendClick()}
                 disabled={actionLoading}
                 className="flex items-center gap-1.5 rounded-lg border border-green-500 px-2.5 py-1.5 text-xs font-semibold text-green-600 hover:bg-green-50 disabled:opacity-50 desktop:gap-2 desktop:px-4 desktop:py-2.5 desktop:text-sm"
               >
@@ -346,8 +386,33 @@ const OrderDetails = () => {
                     <p className="mt-1 text-sm text-gray-600">
                       {order.address}
                     </p>
-                    <div className="mt-2 flex justify-end">
-                      <CopyButton text={buildCopyText(order)} />
+                    <div className="mt-2 flex gap-1.5">
+                      <button
+                        onClick={() => handleSendToSteadfast(order._id)}
+                        disabled={
+                          sendingId === order._id ||
+                          Boolean(order.steadfast?.trackingCode)
+                        }
+                        className="flex h-8 flex-1 items-center justify-center gap-1 rounded-md bg-green-600 text-[11px] font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                      >
+                        <FaTruck size={11} />
+                        {sendingId === order._id
+                          ? "..."
+                          : order.steadfast?.trackingCode
+                            ? "Sent"
+                            : "API"}
+                      </button>
+                      <button
+                        onClick={() => handleSendClick(order._id)}
+                        disabled={actionLoading}
+                        className="flex h-8 flex-1 items-center justify-center gap-1 rounded-md bg-purple-600 text-[11px] font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
+                      >
+                        <IoSend size={11} />
+                        Send
+                      </button>
+                      <div className="flex h-8 flex-1 items-center justify-center overflow-hidden rounded-md bg-gray-500 text-[11px] font-semibold text-white transition hover:bg-gray-600 [&>button]:flex [&>button]:h-full [&>button]:w-full [&>button]:items-center [&>button]:justify-center [&>button]:gap-1 [&>button]:!bg-transparent [&>button]:!p-0 [&>button]:!text-[11px] [&>button]:!text-white">
+                        <CopyButton text={buildCopyText(order)} />
+                      </div>
                     </div>
                   </div>
                 );
@@ -414,7 +479,34 @@ const OrderDetails = () => {
                         {order.address}
                       </td>
                       <td className="p-3">
-                        <CopyButton text={buildCopyText(order)} />
+                        <div className="flex flex-col gap-1.5">
+                          <button
+                            onClick={() => handleSendToSteadfast(order._id)}
+                            disabled={
+                              sendingId === order._id ||
+                              Boolean(order.steadfast?.trackingCode)
+                            }
+                            className="flex h-9 w-24 items-center justify-center gap-1.5 rounded-md bg-green-600 text-xs font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+                          >
+                            <FaTruck size={13} />
+                            {sendingId === order._id
+                              ? "Sending..."
+                              : order.steadfast?.trackingCode
+                                ? "Sent"
+                                : "API"}
+                          </button>
+                          <button
+                            onClick={() => handleSendClick(order._id)}
+                            disabled={actionLoading}
+                            className="flex h-9 w-24 items-center justify-center gap-1.5 rounded-md bg-purple-600 text-xs font-semibold text-white transition hover:bg-purple-700 disabled:opacity-50"
+                          >
+                            <IoSend size={13} />
+                            Send
+                          </button>
+                          <div className="h-9 w-24 overflow-hidden rounded-md bg-gray-500 text-xs font-semibold text-white transition hover:bg-gray-600 [&>button]:flex [&>button]:h-full [&>button]:w-full [&>button]:items-center [&>button]:justify-center [&>button]:gap-1.5 [&>button]:!bg-transparent [&>button]:!text-white">
+                            <CopyButton text={buildCopyText(order)} />
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -482,7 +574,7 @@ const OrderDetails = () => {
       {showSendModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setShowSendModal(false)}
+          onClick={closeSendModal}
         >
           <div
             className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
@@ -490,7 +582,7 @@ const OrderDetails = () => {
           >
             <div className="flex justify-end">
               <button
-                onClick={() => setShowSendModal(false)}
+                onClick={closeSendModal}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ✕
@@ -505,7 +597,9 @@ const OrderDetails = () => {
                 Send Orders To
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Choose the new status for the selected orders
+                {sendTargetId
+                  ? "Choose the new status for this order"
+                  : "Choose the new status for the selected orders"}
               </p>
             </div>
 

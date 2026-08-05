@@ -400,7 +400,6 @@ const AddProduct = () => {
                 type="file"
                 accept="video/*"
                 multiple
-                required
                 onChange={handleVideoChange}
                 className="hidden"
               />
