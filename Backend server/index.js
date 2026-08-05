@@ -21,21 +21,20 @@ app.use(
       'https://www.api.deluxexdeal.com',
     ],
     credentials: true,
-  })
+  }),
 );
 
 Connection();
 app.use(router);
 app.use(express.static('uploads'));
 app.use(express.static('productImage'));
-app.use('/productVideo', express.static(path.join(__dirname, 'productVideo')));
+app.use(express.static('productVideo'));
 let http = require('http');
 const { init: initSocket } = require('./socket_server');
 const { sendServerEvent } = require('./config/sendServerEvent');
 let server = http.createServer(app);
 const io = initSocket(server);
 io.on('connection', socket => {
-
   socket.on('joinUser', () => {
     const roomId = socket.id;
     socket.join(roomId);
@@ -80,7 +79,7 @@ io.on('connection', socket => {
         console.error('Socket search error:', error);
         socket.emit('searchError', { msg: 'Something went wrong' });
       }
-    }
+    },
   );
 });
 
@@ -97,7 +96,6 @@ app.get('/test-fb-pixel', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 app.get('/', (req, res) => {
   res.send('Hello World !');
