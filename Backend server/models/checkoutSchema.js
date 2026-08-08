@@ -20,6 +20,7 @@ let CheckoutSchema = new mongoose.Schema(
         singleSubtotal: {
           type: Number,
         },
+        product_secret: { type: String },
       },
     ],
     subTotal: {
@@ -50,7 +51,7 @@ let CheckoutSchema = new mongoose.Schema(
     steadfast: {
       consignmentId: Number,
       trackingCode: String,
-      status: String, 
+      status: String,
       trackingMessage: String,
       codAmount: Number,
       deliveryCharge: Number,
@@ -59,10 +60,17 @@ let CheckoutSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Hold', 'Cancelled', 'Delivered', 'Returned', 'Shipped'],
+      enum: [
+        'Pending',
+        'Confirmed',
+        'Hold',
+        'Cancelled',
+        'Delivered',
+        'Returned',
+        'Shipped',
+      ],
       default: 'Pending',
     },
-
   },
   {
     timestamps: true,

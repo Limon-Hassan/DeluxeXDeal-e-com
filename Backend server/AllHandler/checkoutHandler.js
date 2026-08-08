@@ -52,10 +52,6 @@ async function makeCheckout(req, res) {
     });
     await checkout.save();
 
-
-
-
-
     let updateProductSold = cartdata.items.map(item => ({
       updateOne: {
         filter: { _id: item.productId._id },
@@ -77,9 +73,6 @@ async function makeCheckout(req, res) {
       items: checkout.items,
       status: 'success',
     });
-
-
-  
 
     await sendServerEvent(
       'Purchase',
@@ -176,6 +169,7 @@ async function directCheckout(req, res) {
         {
           productId: productId,
           quantity: 1,
+          product_secret: product.product_secret || '',
           price: product.price,
         },
       ],
@@ -184,9 +178,6 @@ async function directCheckout(req, res) {
     await directCheckout.save();
 
     await productSchema.findByIdAndUpdate(productId, { $inc: { sold: 1 } });
-
-
-   
 
     await sendServerEvent(
       'Purchase',
@@ -231,8 +222,10 @@ async function sendToSteadfast(req, res) {
       });
     }
 
+    const secret = checkout.items?.[0]?.product_secret;
+
     const steadfastResult = await createSteadfastOrder({
-      invoice: checkout.uniqueOrderID,
+      invoice: secret || checkout.uniqueOrderID,
       recipientName: checkout.name,
       recipientPhone: checkout.phone,
       recipientAddress: checkout.address,
@@ -250,6 +243,7 @@ async function sendToSteadfast(req, res) {
     }
 
     checkout.steadfast = {
+      invoiceSent: secret || checkout.uniqueOrderID,
       consignmentId: steadfastResult.data.consignment.consignment_id,
       trackingCode: steadfastResult.data.consignment.tracking_code,
       status: steadfastResult.data.consignment.status,
@@ -301,7 +295,9 @@ async function steadfastWebhook(req, res) {
       });
     }
 
-    let checkout = await checkoutSchema.findOne({ uniqueOrderID: invoice });
+    let checkout = await checkoutSchema.findOne({
+      'steadfast.invoiceSent': invoice,
+    });
 
     if (!checkout) {
       return res.status(404).json({
@@ -324,14 +320,13 @@ async function steadfastWebhook(req, res) {
       // চাইলে courier status অনুযায়ী orderStatus ও auto-update করা যায়
       if (status === 'cancelled') {
         checkout.orderStatus = 'Cancelled';
-      }else if (status === 'delivered') {
+      } else if (status === 'delivered') {
         checkout.orderStatus = 'Delivered';
-      }else if (status === 'out_for_delivery') {
+      } else if (status === 'out_for_delivery') {
         checkout.orderStatus = 'Shipped';
-      }else if (status === 'returned') {
+      } else if (status === 'returned') {
         checkout.orderStatus = 'Returned';
       }
-     
     } else if (notification_type === 'tracking_update') {
       checkout.steadfast = {
         ...checkout.steadfast,
@@ -409,11 +404,18 @@ async function AdminReadCheckout(req, res) {
   }
 }
 
-
 async function bulkUpdateOrderStatus(req, res) {
-  const { ids, orderStatus } = req.body; 
+  const { ids, orderStatus } = req.body;
 
-  const allowedStatus = ['Pending', 'Confirmed', 'Hold', 'Cancelled', 'Delivered', 'Returned', 'Shipped'];
+  const allowedStatus = [
+    'Pending',
+    'Confirmed',
+    'Hold',
+    'Cancelled',
+    'Delivered',
+    'Returned',
+    'Shipped',
+  ];
 
   if (!Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ msg: 'ids array is required' });
@@ -445,11 +447,10 @@ async function bulkUpdateOrderStatus(req, res) {
   }
 }
 
-
 async function updateOrderStatus(req, res) {
-    const { id } = req.params; 
+  const { id } = req.params;
   const { orderStatus } = req.body;
-  
+
   let allowedStatus = [
     'Pending',
     'Confirmed',
@@ -464,32 +465,31 @@ async function updateOrderStatus(req, res) {
     return res.status(400).json({ msg: 'Invalid order status' });
   }
 
-   try {
-     const checkout = await checkoutSchema.findByIdAndUpdate(
-       id,
-       { orderStatus },
-       { new: true },
-     );
+  try {
+    const checkout = await checkoutSchema.findByIdAndUpdate(
+      id,
+      { orderStatus },
+      { new: true },
+    );
 
-     if (!checkout) {
-       return res.status(404).json({ msg: 'Checkout not found' });
-     }
+    if (!checkout) {
+      return res.status(404).json({ msg: 'Checkout not found' });
+    }
 
-     getIO().to(checkout.cartId).emit('orderStatusUpdate', {
-       checkoutId: checkout._id,
-       orderStatus: checkout.orderStatus,
-     });
+    getIO().to(checkout.cartId).emit('orderStatusUpdate', {
+      checkoutId: checkout._id,
+      orderStatus: checkout.orderStatus,
+    });
 
-     return res.status(200).json({
-       msg: `Order status updated to ${orderStatus}`,
-       data: checkout,
-     });
-   } catch (error) {
-     console.error(error.message);
-     return res.status(500).json({ msg: 'Server error', error: error.message });
-   }
+    return res.status(200).json({
+      msg: `Order status updated to ${orderStatus}`,
+      data: checkout,
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ msg: 'Server error', error: error.message });
+  }
 }
-
 
 async function deleteCheckout(req, res) {
   let { id } = req.query;

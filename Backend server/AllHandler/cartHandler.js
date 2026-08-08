@@ -36,6 +36,7 @@ async function addCart(req, res) {
       quantity: qty,
       price,
       weight,
+      product_secret: product.product_secret || '',
       singleSubtotal: price * qty,
       shippingCost,
     });
