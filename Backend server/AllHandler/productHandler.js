@@ -165,6 +165,7 @@ async function updateProduct(req, res) {
     ChangeOldPrice,
     ChangeProductSold,
     ChangeDisCountPrice,
+    ChangeProduct_secret,
   } = req.body;
   try {
     let updatedData = {};
@@ -179,6 +180,8 @@ async function updateProduct(req, res) {
     if (ChangeBrand) updatedData.brand = ChangeBrand;
     if (ChangeWeight !== undefined && ChangeWeight !== '')
       updatedData.weight = Number(ChangeWeight);
+    if (ChangeProduct_secret !== undefined && ChangeProduct_secret !== '')
+      updatedData.product_secret = ChangeProduct_secret;
     if (ChangeOldPrice !== undefined && ChangeOldPrice !== '')
       updatedData.oldPrice = Number(ChangeOldPrice);
     if (ChangeDisCountPrice !== undefined && ChangeDisCountPrice !== '')
