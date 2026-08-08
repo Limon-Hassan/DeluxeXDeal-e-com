@@ -24,6 +24,7 @@ const ProductList = () => {
   const editor = useRef(null);
   const dialogRef = useRef(null);
   const [productChangeName, setProductChangeName] = useState("");
+  const [ChangeProductSecret, setChangeProductSecret] = useState("");
   const [category, setCategory] = useState("");
   const [categoriesFromBackend, setcategoriesFromBackend] = useState([]);
   const [brandChange, setBrandChange] = useState("");
@@ -43,6 +44,7 @@ const ProductList = () => {
     setOpen(true);
     setProId(product._id);
     setProductChangeName(product.name || "");
+    setChangeProductSecret(product.secret || "");
     setCategory(product.category?.[0]?._id || "");
     setBrandChange(product.brand || "");
     setPriceChange(product.price || "");
@@ -163,6 +165,7 @@ const ProductList = () => {
 
     const formData = new FormData();
     formData.append("ChangeName", productChangeName);
+    formData.append("ChangeProduct_secret", ChangeProductSecret);
     formData.append("ChangeCategory", category);
     formData.append("ChangeBrand", brandChange);
     formData.append("Changestock", stockChange);
@@ -204,6 +207,8 @@ const ProductList = () => {
       setChangeSold("");
       setImages([]);
       setVideos([]);
+      setDiscountChange("");
+      setChangeProductSecret("");
       toast.success("Product Update SuccessFully!", {
         position: "top-center",
         autoClose: 3000,
@@ -345,14 +350,27 @@ const ProductList = () => {
                 <div className="flex flex-col gap-4">
                   <div>
                     <Typography variant="small" className="mb-3">
-                      Product ChangeName *
+                      Change Product Name *
                     </Typography>
                     <Input
                       color="blue"
                       type="text"
-                      label="Product changeName"
+                      label="Change Product Name"
                       value={productChangeName}
                       onChange={(e) => setProductChangeName(e.target.value)}
+                      maxLength={80}
+                    />
+                  </div>
+                  <div>
+                    <Typography variant="small" className="mb-3">
+                      Change Product Secret *
+                    </Typography>
+                    <Input
+                      color="blue"
+                      type="text"
+                      label="Change Product Secret"
+                      value={ChangeProductSecret}
+                      onChange={(e) => setChangeProductSecret(e.target.value)}
                       maxLength={80}
                     />
                   </div>
