@@ -252,7 +252,7 @@ const OrderDetailsBase2 = () => {
         <div className="rounded-xl bg-white p-4 shadow-lg desktop:p-6">
           {/* Header */}
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="font-bold text-gray-900 sm:text-[20px] md:text-2xl xl:text-2xl 2xl:text-2xl">
               Base2 Order Details
             </h2>
             <span className="text-sm font-medium text-green-500">
