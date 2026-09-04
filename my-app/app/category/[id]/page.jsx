@@ -86,7 +86,7 @@ const page = () => {
               <div
                 key={index}
                 onClick={() => handleShowProduct(pro._id)}
-                className="relative z-0 mobile:shadow-md tablet:shadow-md laptop:shadow-none computer:shadow-none border border-black/40 mobile:p-1 tablet:p-[3px] laptop:p-[3px] computer:p-[3px] mobile:w-[48%] tablet:w-[31%] laptop:w-[31%] computer:w-[23%] hover:border-[#F1A31C] rounded-sm"
+                className="relative z-0 mobile:shadow-md tablet:shadow-md laptop:shadow-none computer:shadow-none border border-black/40 mobile:p-1 tablet:p-[3px] laptop:p-[3px] computer:p-[3px] mobile:w-[48%] tablet:w-[31%] laptop:w-[31%] computer:w-[23%] hover:border-[#25ac35] rounded-sm"
               >
                 <div className="mobile:w-full tablet:w-auto laptop:w-full computer:w-full mobile:h-[178px] tablet:h-full laptop:h-[250px] computer:h-[250px] flex items-center justify-center mx-auto overflow-hidden cursor-pointer">
                   <img
@@ -96,7 +96,7 @@ const page = () => {
                   />
                 </div>
                 {pro.disCountPrice > 0 && (
-                  <div className="absolute top-[5px] left-[5px] bg-[#E6963A] mobile:text-[12px] tablet:text-[14px] laptop:text-[14px] computer:text-[14px] font-nunito font-bold text-white mobile:w-[90px] mobile:h-[30px] tablet:w-[90px] tablet:h-[35px] laptop:w-[90px] laptop:h-[35px] computer:w-[90px] computer:h-[35px] rounded-full flex items-center justify-center z-10">
+                  <div className="absolute top-[5px] left-[5px] bg-green-500 mobile:text-[12px] tablet:text-[14px] laptop:text-[14px] computer:text-[14px] font-nunito font-bold text-white mobile:w-[90px] mobile:h-[30px] tablet:w-[90px] tablet:h-[35px] laptop:w-[90px] laptop:h-[35px] computer:w-[90px] computer:h-[35px] rounded-full flex items-center justify-center z-10">
                     Sale {pro.disCountPrice}% off
                   </div>
                 )}
@@ -131,7 +131,7 @@ const page = () => {
                   <button
                     onClick={() => handleDirectCheckout(pro._id)}
                     disabled={pro.stock < 1}
-                    className="mobile:text-[14px] tablet:text-[16px] laptop:text-[16px] computer:text-[16px] font-noto-bengali font-bold text-[#FFF] bg-[#F1A31C] border-b-4 border-[#BD8017] mobile:w-full tablet:w-full laptop:w-full computer:w-full mobile:h-[36px] tablet:h-[40px] laptop:h-[40px] computer:h-[40px] rounded-full flex items-center justify-center mx-auto cursor-pointer"
+                    className="mobile:text-[14px] tablet:text-[16px] laptop:text-[16px] computer:text-[16px] font-noto-bengali font-bold text-[#FFF] bg-green-500 border-b-4 border-green-600 mobile:w-full tablet:w-full laptop:w-full computer:w-full mobile:h-[36px] tablet:h-[40px] laptop:h-[40px] computer:h-[40px] rounded-full flex items-center justify-center mx-auto cursor-pointer"
                   >
                     <FaCartShopping className="mr-2.5" />
                     অডার করুন

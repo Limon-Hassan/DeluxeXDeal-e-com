@@ -4,6 +4,8 @@ import Container from '../../../../Componets/Container/Container';
 import { useSnackbar } from 'notistack';
 import { useParams, useRouter } from 'next/navigation';
 import CheckBox from '../../../../Componets/CheckBox';
+import { HiShoppingBag } from 'react-icons/hi2';
+import { ImSpinner6 } from 'react-icons/im';
 
 const page = () => {
   let router = useRouter();
@@ -15,6 +17,7 @@ const page = () => {
   let [Selectpayment, setSelectpayment] = useState('outsideDhaka');
   let [SummeryData, setSummeryData] = useState({});
   let [saveInfo, setSaveInfo] = useState(false);
+  let [loading, setLoading] = useState(false);
 
   let handlePaymentChange = paymentMethod => {
     setSelectpayment(paymentMethod);
@@ -107,6 +110,7 @@ const page = () => {
     const isMobile = window.innerWidth < 768;
     let productId = id;
     try {
+      setLoading(true);
       if (!name || !phone || !Address) {
         setError({
           name: !name,
@@ -179,13 +183,13 @@ const page = () => {
             'track',
             'Purchase',
             {
-              value: Number(SummeryData.totalPrice), 
+              value: Number(SummeryData.totalPrice),
               currency: 'BDT',
-              content_ids: [id], 
+              content_ids: [id],
               content_type: 'product',
             },
             { eventID: data.data._id },
-          ); 
+          );
         }
         setSummeryData([]);
         localStorage.setItem('userInfo', JSON.stringify(phone));
@@ -218,6 +222,7 @@ const page = () => {
         SetAddress('');
         SetPhone('');
         setSaveInfo(false);
+        setLoading(false);
         setTimeout(() => {
           window.location.href = '/orderSuccess';
         }, 1000);
@@ -393,9 +398,20 @@ const page = () => {
                 </h4>
                 <button
                   onClick={handleSubmit}
-                  className="mobile:text-[20px] tablet:text-[28px] laptop:text-[28px] computer:text-[28px] font-bold font-noto-bengali text-white bg-[#C67D09] w-full h-[60px] cursor-pointer rounded-[4px] mt-[30px]"
+                  disabled={loading}
+                  className="mobile:text-[20px] tablet:text-[28px] laptop:text-[28px] computer:text-[28px] font-bold font-noto-bengali text-white bg-green-500 w-full h-[60px] cursor-pointer rounded-[4px] mt-[30px] hover:bg-green-600 active:bg-green-600/80 flex items-center gap-2.5"
                 >
-                  অর্ডার করুন
+                  {loading ? (
+                    <>
+                      অর্ডার হচ্ছে
+                      <ImSpinner6 size={25} className="animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      <HiShoppingBag size={25} />
+                      অর্ডার করুন
+                    </>
+                  )}
                 </button>
               </div>
             </div>

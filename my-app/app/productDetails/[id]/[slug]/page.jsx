@@ -11,6 +11,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { IoCheckmarkDoneCircleOutline } from 'react-icons/io5';
 import { FaWhatsapp } from 'react-icons/fa';
+import { RiArrowLeftSLine, RiArrowRightSLine } from 'react-icons/ri';
 
 const Page = () => {
   const [product, setProduct] = useState('');
@@ -26,6 +27,7 @@ const Page = () => {
   });
 
   const [selectedImage, setSelectedImage] = useState('');
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [zoomStyle, setZoomStyle] = useState({
@@ -35,7 +37,9 @@ const Page = () => {
 
   useEffect(() => {
     if (product && Array.isArray(product.photo) && product.photo.length > 0) {
+      setSelectedImageIndex(0);
       setSelectedImage(product.photo[0]);
+      setShowVideo(false);
     }
   }, [product]);
 
@@ -60,6 +64,28 @@ const Page = () => {
       b: false,
       [type]: true,
     });
+  };
+
+  const handlePrevImage = () => {
+    if (!images.length) return;
+
+    const newIndex =
+      selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1;
+
+    setSelectedImageIndex(newIndex);
+    setSelectedImage(images[newIndex]);
+    setShowVideo(false);
+  };
+
+  const handleNextImage = () => {
+    if (!images.length) return;
+
+    const newIndex =
+      selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1;
+
+    setSelectedImageIndex(newIndex);
+    setSelectedImage(images[newIndex]);
+    setShowVideo(false);
   };
 
   useEffect(() => {
@@ -177,8 +203,6 @@ const Page = () => {
 
   const videos = product && Array.isArray(product.video) ? product.video : [];
 
-  
-
   return (
     <>
       <Head>
@@ -198,7 +222,7 @@ const Page = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <section className="mobile:pt-[150px] mobile:pb-[50px] tablet:py-[80px] laptop:py-[100px] computer:pt-[270px] computer:pb-[100px]">
+      <section className="mobile:pt-[120px] mobile:pb-[50px] tablet:py-[150px] laptop:pt-[100px] laptop:pb-[100px] computer:pt-[270px] computer:pb-[100px]">
         <Container>
           <div className="flex flex-col lg:flex-row mobile:gap-[20px] tablet:gap-[50px] laptop:gap-[100px] computer:gap-[100px]">
             <div className="image_part relative shadow-md flex flex-col items-center">
@@ -212,6 +236,7 @@ const Page = () => {
                     controls
                     className="w-full h-full object-cover"
                   />
+
                   <button
                     onClick={() => setShowVideo(false)}
                     className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer z-10"
@@ -221,20 +246,73 @@ const Page = () => {
                 </div>
               ) : (
                 <div
-                  className="mobile:w-[90vw] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
-                  style={{
-                    backgroundImage: `url(${selectedImage})`,
-                    ...zoomStyle,
-                  }}
+                  className="relative mobile:w-[90vw] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
                   onMouseMove={handleMouseMove}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
-                ></div>
+                >
+                  {/* ================= IMAGE SLIDER ================= */}
+                  <div
+                    className="flex h-full transition-transform duration-500 ease-in-out"
+                    style={{
+                      width: `${images.length * 100}%`,
+                      transform: `translateX(-${
+                        selectedImageIndex * (100 / images.length)
+                      }%)`,
+                    }}
+                  >
+                    {images.map((img, index) => (
+                      <div
+                        key={index}
+                        className="h-full flex-shrink-0 bg-cover bg-center bg-no-repeat"
+                        style={{
+                          width: `${100 / images.length}%`,
+                          backgroundImage: `url(${img})`,
+                          ...(index === selectedImageIndex ? zoomStyle : {}),
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* ================= LEFT ARROW ================= */}
+                  {images.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handlePrevImage();
+                      }}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center cursor-pointer"
+                      aria-label="Previous image"
+                    >
+                      <span className="text-white text-[58px] font-extralight leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:scale-110 transition-transform duration-200">
+                        <RiArrowLeftSLine />
+                      </span>
+                    </button>
+                  )}
+
+                  {/* ================= RIGHT ARROW ================= */}
+                  {images.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleNextImage();
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center cursor-pointer"
+                      aria-label="Next image"
+                    >
+                      <span className="text-white text-[58px] font-extralight leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)] hover:scale-110 transition-transform duration-200">
+                        <RiArrowRightSLine />
+                      </span>
+                    </button>
+                  )}
+                </div>
               )}
 
               {!showVideo && (
                 <button
-                  className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer"
+                  className="absolute top-2 right-2 bg-white text-black p-2 rounded-full shadow-md hover:bg-gray-200 transition cursor-pointer z-30"
                   onClick={() => setIsFullscreen(true)}
                 >
                   <FaMagnifyingGlass />
@@ -251,6 +329,7 @@ const Page = () => {
                     alt="fullscreen"
                     className="mobile:max-w-[90%] mobile:max-h-auto tablet:max-w-[90%] tablet:max-h-[70%] laptop:max-h-[90%] laptop:max-w-[90%] computer:max-h-[90%] computer:max-w-[90%] object-contain rounded-lg shadow-lg"
                   />
+
                   <button
                     className="absolute top-5 right-5 text-white text-3xl font-bold cursor-pointer"
                     onClick={() => setIsFullscreen(false)}
@@ -282,6 +361,7 @@ const Page = () => {
                     }`}
                     onClick={() => {
                       setSelectedImage(img);
+                      setSelectedImageIndex(i);
                       setShowVideo(false);
                     }}
                   />
@@ -317,14 +397,14 @@ const Page = () => {
                 <div className="w-full flex flex-col gap-2 items-center mt-3.5">
                   <button
                     onClick={() => handleDirectCheckout(product._id)}
-                    className="text-[16px] font-bold font-nunito text-white bg-[#F2B10C] py-[10px] mobile:w-full tablet:w-full laptop:w-[180px] computer:w-[220px] rounded-[6px] cursor-pointer hover:bg-[#e1a60b] transition duration-300 ease-in-out flex items-center justify-center gap-2"
+                    className="text-[16px] font-bold font-nunito text-white bg-green-500 py-[10px] mobile:w-full tablet:w-full laptop:w-[180px] computer:w-[220px] rounded-[6px] cursor-pointer hover:bg-green-600 transition duration-300 ease-in-out flex items-center justify-center gap-2"
                   >
                     <FaCartShopping size={24} /> অর্ডার করুন
                   </button>
                   <button
                     disabled={addedCart.includes(product._id)}
                     onClick={() => handleCart(product._id)}
-                    className={`text-[16px] font-bold font-nunito text-white ${addedCart.includes(product._id) ? 'bg-green-500 opacity-60 cursor-not-allowed ' : 'bg-green-600'} py-[10px] mobile:w-full tablet:w-full laptop:w-[180px] computer:w-[220px] rounded-[6px] cursor-pointer hover:bg-transparent hover:border hover:border-green-500 hover:text-green-500 transition duration-300 ease-in-out flex items-center justify-center gap-2 active:scale-95`}
+                    className={`text-[16px] font-bold font-nunito text-white ${addedCart.includes(product._id) ? 'bg-green-500 opacity-60 cursor-not-allowed ' : 'bg-green-600'} py-[10px] mobile:w-full tablet:w-full laptop:w-[180px] computer:w-[220px] rounded-[6px] cursor-pointer hover:bg-transparent hover:border hover:border-green-500 hover:text-green-500 transition duration-300 ease-in-out hidden items-center justify-center gap-2 active:scale-95 `}
                   >
                     {addedCart.includes(product._id) ? (
                       <>
@@ -374,7 +454,7 @@ const Page = () => {
               {RelatedProduct?.map((pro, idx) => (
                 <div
                   key={idx}
-                  className="relative z-0 mobile:shadow-md tablet:shadow-md laptop:shadow-none computer:shadow-none border border-black/40 mobile:p-1 tablet:p-[3px] laptop:p-[3px] computer:p-[3px] mobile:w-[48%] tablet:w-[31%] laptop:w-[31%] computer:w-[23%] hover:border-[#F1A31C] rounded-sm"
+                  className="relative z-0 mobile:shadow-md tablet:shadow-md laptop:shadow-none computer:shadow-none border border-black/40 mobile:p-1 tablet:p-[3px] laptop:p-[3px] computer:p-[3px] mobile:w-[48%] tablet:w-[31%] laptop:w-[31%] computer:w-[23%] hover:border-[#25ac35] rounded-sm"
                 >
                   <div
                     onClick={() => handleShowProduct(pro._id)}
@@ -387,7 +467,7 @@ const Page = () => {
                     />
                   </div>
                   {pro.disCountPrice > 0 && (
-                    <div className="absolute top-[5px] left-[5px] bg-[#E6963A] mobile:text-[12px] tablet:text-[14px] laptop:text-[14px] computer:text-[14px] font-nunito font-bold text-white mobile:w-[90px] mobile:h-[30px] tablet:w-[90px] tablet:h-[35px] laptop:w-[90px] laptop:h-[35px] computer:w-[90px] computer:h-[35px] rounded-full flex items-center justify-center z-10">
+                    <div className="absolute top-[5px] left-[5px] bg-green-500 mobile:text-[12px] tablet:text-[14px] laptop:text-[14px] computer:text-[14px] font-nunito font-bold text-white mobile:w-[90px] mobile:h-[30px] tablet:w-[90px] tablet:h-[35px] laptop:w-[90px] laptop:h-[35px] computer:w-[90px] computer:h-[35px] rounded-full flex items-center justify-center z-10">
                       Sale {pro.disCountPrice}% off
                     </div>
                   )}
@@ -415,7 +495,7 @@ const Page = () => {
                     <button
                       onClick={() => handleDirectCheckout(pro._id)}
                       disabled={pro.stock < 1}
-                      className="mobile:text-[14px] tablet:text-[16px] laptop:text-[16px] computer:text-[16px] font-noto-bengali font-bold text-[#FFF] bg-[#F1A31C] border-b-4 border-[#BD8017] mobile:w-full tablet:w-full laptop:w-full computer:w-full mobile:h-[36px] tablet:h-[40px] laptop:h-[40px] computer:h-[40px] rounded-full flex items-center justify-center mx-auto cursor-pointer"
+                      className="mobile:text-[14px] tablet:text-[16px] laptop:text-[16px] computer:text-[16px] font-noto-bengali font-bold text-[#FFF] bg-green-500 border-b-4 border-green-600 mobile:w-full tablet:w-full laptop:w-full computer:w-full mobile:h-[36px] tablet:h-[40px] laptop:h-[40px] computer:h-[40px] rounded-full flex items-center justify-center mx-auto cursor-pointer"
                     >
                       <FaCartShopping className="mr-2.5" />
                       অডার করুন
