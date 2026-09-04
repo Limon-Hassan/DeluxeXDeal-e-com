@@ -150,6 +150,17 @@ export function SideBer({ sidebar, setSidebar }) {
                         Order Details
                       </ListItem>
                     </Link>
+                    <Link to="/orderDetailsBase2">
+                      <ListItem>
+                        <ListItemPrefix>
+                          <ChevronRightIcon
+                            strokeWidth={3}
+                            className="h-3 w-5"
+                          />
+                        </ListItemPrefix>
+                        Order Details Base2
+                      </ListItem>
+                    </Link>
                     {/* <ListItem>
                       <ListItemPrefix>
                         <ChevronRightIcon strokeWidth={3} className="h-3 w-5" />

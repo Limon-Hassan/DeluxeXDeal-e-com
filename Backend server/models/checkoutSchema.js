@@ -5,6 +5,9 @@ let CheckoutSchema = new mongoose.Schema(
     cartId: {
       type: String,
     },
+    base: {
+      type: String, 
+    },
     items: [
       {
         productId: {
@@ -21,6 +24,7 @@ let CheckoutSchema = new mongoose.Schema(
           type: Number,
         },
         product_secret: { type: String },
+        productBase: { type: String },
       },
     ],
     subTotal: {

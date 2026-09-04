@@ -16,6 +16,7 @@ const AddProduct = () => {
   const editor = useRef(null);
   const [productName, setProductName] = useState("");
   const [productSecretKey, setProductSecretKey] = useState("");
+  const [productBase, setProductBase] = useState("");
   const [category, setCategory] = useState("");
   const [categoriesFromBackend, setcategoriesFromBackend] = useState([]);
   const [brand, setBrand] = useState("");
@@ -93,6 +94,7 @@ const AddProduct = () => {
     const formData = new FormData();
     formData.append("name", productName);
     formData.append("product_secret", productSecretKey);
+    formData.append("productBase", productBase);
     formData.append("category", category);
     formData.append("brand", brand);
     formData.append("stock", stock);
@@ -121,7 +123,6 @@ const AddProduct = () => {
         withCredentials: true,
       })
       .then((response) => {
-        console.log(response);
         setProductName("");
         setCategory("");
         setBrand("");
@@ -133,6 +134,7 @@ const AddProduct = () => {
         setSold("");
         setDiscount("");
         setProductSecretKey("");
+        setProductBase("");
         setImages([]);
         setVideos([]);
         toast.success("Product added SuccessFully!", {
@@ -188,6 +190,19 @@ const AddProduct = () => {
               label="Product Secret Key"
               value={productSecretKey}
               onChange={(e) => setProductSecretKey(e.target.value)}
+              maxLength={80}
+            />
+          </div>
+          <div>
+            <Typography variant="small" className="mb-3">
+              Product Base For Bismillah
+            </Typography>
+            <Input
+              color="blue"
+              type="text"
+              label="Product Base For Bismillah"
+              value={productBase}
+              onChange={(e) => setProductBase(e.target.value)}
               maxLength={80}
             />
           </div>

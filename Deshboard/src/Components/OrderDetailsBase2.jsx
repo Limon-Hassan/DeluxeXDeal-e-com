@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import CopyButton from "./CopyButton";
@@ -50,7 +48,7 @@ const SEND_OPTIONS = [
 
 const ITEMS_PER_PAGE = 10;
 
-const OrderDetails = () => {
+const OrderDetailsBase2 = () => {
   const api = import.meta.env.VITE_SERVER_URL;
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
@@ -65,7 +63,7 @@ const OrderDetails = () => {
 
   const fetchOrders = () => {
     axios
-      .get(`${api}api/v3/checkout/AdminReadCheckout`)
+      .get(`${api}api/v3/checkout/AdminReadCheckout/second`)
       .then((res) => {
         setOrders(res.data.data || []);
       })
@@ -164,7 +162,7 @@ const OrderDetails = () => {
 
     setActionLoading(true);
     try {
-      await axios.patch(`${api}api/v3/checkout/bulk-status`, {
+      await axios.patch(`${api}api/v3/checkout/bulk-status/second`, {
         ids,
         orderStatus,
       });
@@ -213,12 +211,11 @@ const OrderDetails = () => {
       .join("\n");
   };
 
-
   const handleSendToSteadfast = async (orderId) => {
     setSendingId(orderId);
     try {
       const res = await axios.post(
-        `${api}api/v3/checkout/send-to-steadfast/${orderId}`,
+        `${api}api/v3/checkout/send-to-steadfast/second/${orderId}`,
       );
       setOrders((prev) =>
         prev.map((o) =>
@@ -255,7 +252,9 @@ const OrderDetails = () => {
         <div className="rounded-xl bg-white p-4 shadow-lg desktop:p-6">
           {/* Header */}
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Order Details For bismillah machineries
+            </h2>
             <span className="text-sm font-medium text-green-500">
               Total {tabFilteredOrders.length} Found
             </span>
@@ -621,4 +620,4 @@ const OrderDetails = () => {
   );
 };
 
-export default OrderDetails;
+export default OrderDetailsBase2;

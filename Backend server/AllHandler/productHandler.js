@@ -16,6 +16,7 @@ async function createProduct(req, res) {
     oldPrice,
     disCountPrice,
     product_secret,
+    productBase,
   } = req.body;
   if (!name || !description || !price) {
     return res.status(400).send({ msg: 'please fill all the fields' });
@@ -48,6 +49,7 @@ async function createProduct(req, res) {
       oldPrice,
       disCountPrice,
       product_secret: product_secret || '',
+      Base: productBase || '',
     });
 
     await product.save();
@@ -166,6 +168,7 @@ async function updateProduct(req, res) {
     ChangeProductSold,
     ChangeDisCountPrice,
     ChangeProduct_secret,
+    ChangeProductBase,
   } = req.body;
   try {
     let updatedData = {};
@@ -188,6 +191,8 @@ async function updateProduct(req, res) {
       updatedData.disCountPrice = Number(ChangeDisCountPrice);
     if (ChangeProductSold !== undefined && ChangeProductSold !== '')
       updatedData.sold = Number(ChangeProductSold);
+    if (ChangeProductBase !== undefined && ChangeProductBase !== '')
+      updatedData.Base = ChangeProductBase;
 
     if (ChangeCategory) {
       updatedData.category = Array.isArray(ChangeCategory)

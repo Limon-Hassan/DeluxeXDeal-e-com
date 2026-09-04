@@ -19,6 +19,9 @@ let productSchema = new mongoose.Schema(
     product_secret: {
       type: String,
     },
+    Base: {
+      type: String,
+    },
     photo: [String],
     video: [String],
     sold: {
