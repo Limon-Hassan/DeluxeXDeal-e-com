@@ -1,6 +1,5 @@
 let express = require('express');
 const {
-  makeCheckout,
   AdminReadCheckout,
   deleteCheckout,
   getSavedInfo,
@@ -17,7 +16,7 @@ const {
 } = require('../../AllHandler/checkoutHandler');
 let router = express.Router();
 
-router.post('/makeCheckout', makeCheckout);
+// router.post('/makeCheckout', makeCheckout);
 router.post('/directCheckout', directCheckout);
 router.get('/AdminReadCheckout', AdminReadCheckout);
 router.get('/AdminReadCheckout/second', AdminReadCheckoutSecond);

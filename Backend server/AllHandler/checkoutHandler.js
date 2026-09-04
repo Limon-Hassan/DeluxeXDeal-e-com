@@ -785,7 +785,6 @@ async function deleteCheckout(req, res) {
 }
 
 module.exports = {
-  makeCheckout,
   AdminReadCheckout,
   deleteCheckout,
   getSavedInfo,
