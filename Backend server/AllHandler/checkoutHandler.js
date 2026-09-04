@@ -113,8 +113,6 @@ const { v4: uuidv4 } = require('uuid');
 //   }
 // }
 
-
-
 async function directCheckout(req, res) {
   let { productId, area } = req.query;
   let { name, address, phone, paymentMethod, saveInfo } = req.body;
@@ -202,6 +200,29 @@ async function directCheckout(req, res) {
       },
       req,
     );
+
+    const purchaseData = {
+      phone: phone,
+      ip: req.ip,
+      ua: req.headers['user-agent'],
+
+      event_id: directCheckout._id.toString(),
+
+      custom_data: {
+        currency: 'BDT',
+        value: Number(totalPrice),
+        content_ids: [productId],
+        content_type: 'product',
+      },
+    };
+
+    await sendServerEvent('Purchase', purchaseData, req);
+
+    await sendServerEvent('Purchase', purchaseData, req, {
+      pixelId: process.env.META_PIXEL_ID2,
+      accessToken: process.env.META_ACCESS_TOKEN2,
+      testEventCode: process.env.META_TEST_EVENT2,
+    });
 
     return res.status(200).json({
       msg: 'Checkout successful',

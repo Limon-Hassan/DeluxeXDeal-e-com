@@ -253,7 +253,7 @@ const OrderDetailsBase2 = () => {
           {/* Header */}
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">
-              Order Details For bismillah machineries
+              Base2 Order Details
             </h2>
             <span className="text-sm font-medium text-green-500">
               Total {tabFilteredOrders.length} Found
