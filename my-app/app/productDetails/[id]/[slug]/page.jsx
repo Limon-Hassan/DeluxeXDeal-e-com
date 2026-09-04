@@ -43,19 +43,37 @@ const Page = () => {
     }
   }, [product]);
 
-  const handleMouseMove = e => {
-    const { left, top, width, height } = e.target.getBoundingClientRect();
-    const x = ((e.pageX - left) / width) * 100;
-    const y = ((e.pageY - top) / height) * 100;
-    setZoomStyle(prev => ({ ...prev, backgroundPosition: `${x}% ${y}%` }));
+  const handlePointerMove = e => {
+    if (e.pointerType !== 'mouse') return;
+
+    const { left, top, width, height } =
+      e.currentTarget.getBoundingClientRect();
+
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+
+    setZoomStyle(prev => ({
+      ...prev,
+      backgroundPosition: `${x}% ${y}%`,
+    }));
   };
 
-  const handleMouseEnter = () => {
-    setZoomStyle(prev => ({ ...prev, backgroundSize: '200%' }));
+  const handlePointerEnter = e => {
+    if (e.pointerType !== 'mouse') return;
+
+    setZoomStyle(prev => ({
+      ...prev,
+      backgroundSize: '200%',
+    }));
   };
 
-  const handleMouseLeave = () => {
-    setZoomStyle({ backgroundPosition: 'center', backgroundSize: '100%' });
+  const handlePointerLeave = e => {
+    if (e.pointerType !== 'mouse') return;
+
+    setZoomStyle({
+      backgroundPosition: 'center',
+      backgroundSize: '100%',
+    });
   };
 
   let handleActive = type => {
@@ -247,9 +265,9 @@ const Page = () => {
               ) : (
                 <div
                   className="relative mobile:w-[90vw] mobile:h-[300px] tablet:w-[400px] tablet:h-[400px] laptop:w-[400px] laptop:h-[400px] computer:w-[400px] computer:h-[400px] rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat cursor-zoom-in"
-                  onMouseMove={handleMouseMove}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
+                  onPointerMove={handlePointerMove}
+                  onPointerEnter={handlePointerEnter}
+                  onPointerLeave={handlePointerLeave}
                 >
                   {/* ================= IMAGE SLIDER ================= */}
                   <div

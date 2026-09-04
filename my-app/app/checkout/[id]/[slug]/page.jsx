@@ -117,7 +117,7 @@ const page = () => {
           phone: !phone,
           address: !Address,
         });
-
+        setLoading(false);
         enqueueSnackbar('দয়া করে সবগুলোই পূরণ করুন', {
           variant: 'error',
           anchorOrigin: {
@@ -138,7 +138,7 @@ const page = () => {
 
       if (phone.length < 11) {
         setError(prev => ({ ...prev, phone: true }));
-
+        setLoading(false);
         enqueueSnackbar('মোবাইল নাম্বার সঠিক নয় (১১ ডিজিট দিতে হবে)', {
           variant: 'error',
           anchorOrigin: {
@@ -177,6 +177,7 @@ const page = () => {
       );
       const data = await response.json();
       if (!response.ok) throw new Error(data.msg || 'Checkout failed');
+      setLoading(false);
       if (data.msg === 'Checkout successful') {
         if (typeof window !== 'undefined' && window.fbq) {
           window.fbq(
@@ -399,7 +400,7 @@ const page = () => {
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="mobile:text-[20px] tablet:text-[28px] laptop:text-[28px] computer:text-[28px] font-bold font-noto-bengali text-white bg-green-500 w-full h-[60px] cursor-pointer rounded-[4px] mt-[30px] hover:bg-green-600 active:bg-green-600/80 flex items-center gap-2.5"
+                  className="mobile:text-[20px] tablet:text-[28px] laptop:text-[28px] computer:text-[28px] font-bold font-noto-bengali text-white bg-green-500 w-full h-[60px] cursor-pointer rounded-[4px] mt-[30px] hover:bg-green-600 active:bg-green-600/80 flex items-center justify-center gap-3"
                 >
                   {loading ? (
                     <>
